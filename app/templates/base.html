@@ -8,65 +8,117 @@
 </head>
 <body>
 
-  <!-- Top Navigation Bar -->
-  <nav class="navbar" aria-label="Main Navigation">
-    <a href="{{ url_for('index') }}" class="brand">
-      <span class="brand-badge">KISS</span>
-      <div class="brand-text">
-        <h1>Vocational Training MS</h1>
-        <span>Skill Development & Empowerment Portal</span>
+  <!-- Institutional Information Utility Strip -->
+  <header class="top-util-strip" role="region" aria-label="Institutional Notice">
+    <div class="site-container top-util-inner">
+      <div class="util-left">
+        <!--
+        <span class="badge-academic">KISS VTMS</span>
+        -->
+        
+        <span>Kalinga Institute of Social Sciences (KISS) &bull; Vocational Training Management System</span>
       </div>
-    </a>
+      <div class="util-right">
+        <span>Bhubaneswar, Odisha, India</span>
+        <span class="sep">&bull;</span>
+        <span>Academic Year 2026</span>
+      </div>
+    </div>
+  </header>
 
-    <button class="nav-toggle" aria-label="Toggle navigation menu">&#9776;</button>
+  <!-- Official KISS Website Navigation Bar -->
+  <nav class="main-navbar" aria-label="Main Navigation">
+    <div class="site-container nav-inner">
+      <!-- Left: Official KISS Header Logo & Title Block -->
+      <div class="nav-left">
+        <a href="{{ url_for('index') }}" class="brand-link">
+          <img src="{{ url_for('static', filename='img/kiss_header_logo.png') }}" alt="KISS - Kalinga Institute of Social Sciences" class="kiss-logo-img">
+          <div class="brand-titles-block">
+            <span class="brand-main-title">Vocational Training Management System</span>
+            <div class="brand-tagline-wrap">
+              <span class="brand-tagline-bar"></span>
+              <span class="brand-sub-tagline">Skill Development &amp; Empowerment Portal</span>
+            </div>
+          </div>
+        </a>
+      </div>
 
-    <ul class="nav-links">
-      <li><a href="{{ url_for('index') }}">Home</a></li>
+      <button class="nav-toggle" id="navToggleBtn" aria-label="Toggle navigation menu">&#9776;</button>
 
-      {% if current_user.is_authenticated %}
-        {% if current_user.is_student() %}
-          <li><a href="{{ url_for('student.dashboard') }}">Dashboard</a></li>
-          <li><a href="{{ url_for('student.courses') }}">Courses</a></li>
-          <li><a href="{{ url_for('student.my_enrollments') }}">My Enrollments</a></li>
-          <li><a href="{{ url_for('student.schedule') }}">Schedule</a></li>
-          <li><a href="{{ url_for('student.attendance') }}">Attendance</a></li>
-          <li><a href="{{ url_for('student.materials') }}">Materials</a></li>
-          <li><a href="{{ url_for('student.assessments') }}">Assessments</a></li>
-        {% elif current_user.is_trainer() %}
-          <li><a href="{{ url_for('trainer.dashboard') }}">Dashboard</a></li>
-          <li><a href="{{ url_for('trainer.courses') }}">Assigned Courses</a></li>
-        {% elif current_user.is_admin() %}
-          <li><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
-          <li><a href="{{ url_for('admin.categories') }}">Categories</a></li>
-          <li><a href="{{ url_for('admin.courses') }}">Courses</a></li>
-          <li><a href="{{ url_for('admin.users') }}">Users</a></li>
-          <li><a href="{{ url_for('admin.enrollments') }}">Enrollments</a></li>
-          <li><a href="{{ url_for('admin.audit_logs') }}">Audit Logs</a></li>
-          <li><a href="{{ url_for('admin.reports') }}">Reports</a></li>
+      <!-- Center: Role-Based Navigation Links -->
+      <div class="nav-center" id="navCenterMenu">
+        <a href="{{ url_for('index') }}" class="nav-item-link">Home</a>
+
+        {% if current_user.is_authenticated %}
+          {% if current_user.is_student() %}
+            <a href="{{ url_for('student.dashboard') }}" class="nav-item-link">Dashboard</a>
+            <a href="{{ url_for('student.courses') }}" class="nav-item-link">Courses</a>
+            <a href="{{ url_for('student.my_enrollments') }}" class="nav-item-link">My Enrollments</a>
+            <a href="{{ url_for('student.schedule') }}" class="nav-item-link">Schedule</a>
+            <a href="{{ url_for('student.attendance') }}" class="nav-item-link">Attendance</a>
+            <a href="{{ url_for('student.materials') }}" class="nav-item-link">Materials</a>
+            <a href="{{ url_for('student.assessments') }}" class="nav-item-link">Assessments</a>
+          {% elif current_user.is_trainer() %}
+            <a href="{{ url_for('trainer.dashboard') }}" class="nav-item-link">Dashboard</a>
+            <a href="{{ url_for('trainer.courses') }}" class="nav-item-link">Assigned Courses</a>
+          {% elif current_user.is_admin() %}
+            <a href="{{ url_for('admin.dashboard') }}" class="nav-item-link">Dashboard</a>
+            <a href="{{ url_for('admin.categories') }}" class="nav-item-link">Categories</a>
+            <a href="{{ url_for('admin.courses') }}" class="nav-item-link">Courses</a>
+            <a href="{{ url_for('admin.users') }}" class="nav-item-link">Users</a>
+            <a href="{{ url_for('admin.enrollments') }}" class="nav-item-link">Enrollments</a>
+            <a href="{{ url_for('admin.audit_logs') }}" class="nav-item-link">Audit Logs</a>
+            <a href="{{ url_for('admin.reports') }}" class="nav-item-link">Reports</a>
+          {% endif %}
+        {% else %}
+          <a href="{{ url_for('index') }}#about-section" class="nav-item-link">About VTMS <span class="caret">&#9662;</span></a>
+          <a href="{{ url_for('index') }}#domains-section" class="nav-item-link">Skill Domains <span class="caret">&#9662;</span></a>
+          <a href="{{ url_for('index') }}#journey-section" class="nav-item-link">Training Journey</a>
+          <a href="{{ url_for('index') }}#featured-courses-section" class="nav-item-link">Courses <span class="caret">&#9662;</span></a>
+        {% endif %}
+      </div>
+
+      <!-- Right: User Session Controls & Founder Portrait -->
+      <div class="nav-right" id="navRightGroup">
+        {% if current_user.is_authenticated %}
+          <div class="user-chip">
+            <div class="user-avatar-circle">{{ current_user.username[:2]|upper }}</div>
+            <div class="user-meta">
+              <span class="user-name">{{ current_user.username }}</span>
+              <span class="user-role">{{ current_user.role|title }}</span>
+            </div>
+          </div>
+          <a href="{{ url_for('auth.profile') }}" class="nav-item-link">Profile</a>
+          <a href="{{ url_for('auth.logout') }}" class="btn-logout">Logout</a>
+        {% else %}
+          <a href="{{ url_for('auth.register') }}" class="nav-item-link">Register</a>
+          <a href="{{ url_for('auth.login') }}" class="btn-kiss-action">
+            <span class="action-label">Login</span>
+            <span class="action-arrow-box">&gt;</span>
+          </a>
         {% endif %}
 
-        <li>
-          <div class="user-badge">
-            <span>{{ current_user.username }}</span>
-            <span class="role-pill role-{{ current_user.role }}">{{ current_user.role }}</span>
-          </div>
-        </li>
-        <li><a href="{{ url_for('auth.profile') }}">Profile</a></li>
-        <li><a href="{{ url_for('auth.logout') }}" class="btn btn-sm btn-outline" style="color: #ffffff; border-color: rgba(255,255,255,0.3);">Logout</a></li>
-      {% else %}
-        <li><a href="{{ url_for('auth.login') }}" class="btn btn-sm btn-outline" style="color: #ffffff; border-color: rgba(255,255,255,0.3);">Login</a></li>
-        <li><a href="{{ url_for('auth.register') }}" class="btn btn-sm btn-accent">Register as Student</a></li>
-      {% endif %}
-    </ul>
+        <!-- Founder Portrait Pill (Prof. Dr. Achyuta Samanta) -->
+        <a href="{{ url_for('index') }}#identity-section" class="founder-header-pill" title="Prof. Dr. Achyuta Samanta - Founder, KIIT &amp; KISS">
+          <img src="{{ url_for('static', filename='img/dr_achyuta_samanta.png') }}" alt="Prof. Dr. Achyuta Samanta" class="founder-circle-img">
+          <span class="founder-name-label">Prof. Dr. Achyuta Samanta</span>
+        </a>
+
+        <!-- Far Right Utility Links: Contact Us & Help -->
+        <a href="#contact" class="nav-item-link">Contact Us</a>
+        <a href="#help" class="nav-item-link">Help</a>
+      </div>
+    </div>
   </nav>
+
+  <!-- Traditional Tribal Pattern Divider Ribbon -->
+  <div class="tribal-pattern-divider" role="presentation"></div>
+
+  <!-- Hero Block for Homepage (Full Bleed) -->
+  {% block hero %}{% endblock %}
 
   <!-- Main Container -->
   <main class="container">
-    <!-- Academic Project Disclaimer Banner -->
-    <div class="academic-notice" role="note">
-      <strong>College Software Engineering Project:</strong> This portal is a demonstration academic prototype developed for Kalinga Institute of Social Sciences (KISS) vocational education scenarios. Sample courses and student records are fictional demonstration data.
-    </div>
-
     <!-- Flash Messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
@@ -83,22 +135,73 @@
     {% block content %}{% endblock %}
   </main>
 
+  <!-- Traditional Tribal Pattern Divider Ribbon -->
+  <div class="tribal-pattern-divider" role="presentation"></div>
+
   <!-- Institutional Footer -->
   <footer class="footer">
-    <div class="footer-content">
-      <div>
-        <strong>KISS Vocational Training Management System</strong> &bull; College SE Project (2026)
-        <p style="margin-top: 0.25rem; font-size: 0.8rem; color: #94a3b8;">
-          Empowering tribal and indigenous youth through centralized vocational education, practical skill verification, and standardized credentials.
-        </p>
+    <div class="site-container">
+      <div class="footer-top-row">
+        <div class="footer-brand-col">
+          <div class="footer-logo-row">
+            <span class="footer-badge">KISS</span>
+            <span class="footer-app-name">Vocational Training Management System</span>
+          </div>
+          <p class="footer-lead-text">
+            Empowering indigenous and tribal youth through centralized vocational education, practical skill verification, and standardized credentials.
+          </p>
+        </div>
+        <div class="footer-links-col">
+          <h4 class="f-title">Quick Navigation</h4>
+          <ul class="f-list">
+            <li><a href="{{ url_for('index') }}">Home</a></li>
+            {% if current_user.is_authenticated %}
+              {% if current_user.is_student() %}
+                <li><a href="{{ url_for('student.dashboard') }}">Student Dashboard</a></li>
+                <li><a href="{{ url_for('student.courses') }}">Explore Courses</a></li>
+              {% elif current_user.is_trainer() %}
+                <li><a href="{{ url_for('trainer.dashboard') }}">Trainer Dashboard</a></li>
+              {% elif current_user.is_admin() %}
+                <li><a href="{{ url_for('admin.dashboard') }}">Admin Control Panel</a></li>
+              {% endif %}
+              <li><a href="{{ url_for('auth.profile') }}">Profile</a></li>
+              <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
+            {% else %}
+              <li><a href="{{ url_for('auth.login') }}">Portal Sign In</a></li>
+              <li><a href="{{ url_for('auth.register') }}">Student Registration</a></li>
+            {% endif %}
+          </ul>
+        </div>
+        <div class="footer-links-col">
+          <h4 class="f-title">Campus Context</h4>
+          <p class="f-context">
+            <strong>Kalinga Institute of Social Sciences (KISS)</strong><br>
+            Bhubaneswar, Odisha, India<br>
+            Vocational Skill Training &amp; Livelihoods Initiative
+          </p>
+        </div>
       </div>
-      <div class="footer-links">
-        <a href="{{ url_for('index') }}">Home</a>
-        <a href="{{ url_for('auth.login') }}">Portal Login</a>
+      <div class="footer-bottom-row">
+        <span>&copy; 2026 Kalinga Institute of Social Sciences (KISS) Vocational Training Management System.</span>
+        <span>Aligned with official KISS institutional identity</span>
       </div>
     </div>
   </footer>
 
-  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var toggleBtn = document.getElementById('navToggleBtn');
+      var navMenu = document.getElementById('navCenterMenu');
+      var rightMenu = document.getElementById('navRightGroup');
+      if (toggleBtn && navMenu) {
+        toggleBtn.addEventListener('click', function() {
+          navMenu.classList.toggle('show');
+          if (rightMenu) {
+            rightMenu.classList.toggle('show');
+          }
+        });
+      }
+    });
+  </script>
 </body>
 </html>

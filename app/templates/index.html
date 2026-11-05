@@ -2,150 +2,230 @@
 
 {% block title %}Home - KISS Vocational Training Management System{% endblock %}
 
-{% block content %}
-<div class="hero">
-  <h1>Vocational Skill Training & Career Readiness Portal</h1>
-  <p>
-    Empowering students of Kalinga Institute of Social Sciences (KISS) with hands-on technical trades, 
-    artisan craftsmanship, sustainable agriculture, and entrepreneurial skills for employment and self-reliance.
-  </p>
-  <div class="hero-actions">
-    {% if not current_user.is_authenticated %}
-      <a href="{{ url_for('auth.register') }}" class="btn btn-accent">Student Registration</a>
-      <a href="{{ url_for('auth.login') }}" class="btn btn-outline" style="color: #fff; border-color: #fff;">Portal Sign In</a>
-    {% else %}
-      {% if current_user.is_student() %}
-        <a href="{{ url_for('student.dashboard') }}" class="btn btn-accent">Go to Student Dashboard</a>
-        <a href="{{ url_for('student.courses') }}" class="btn btn-outline" style="color: #fff; border-color: #fff;">Explore Courses</a>
-      {% elif current_user.is_trainer() %}
-        <a href="{{ url_for('trainer.dashboard') }}" class="btn btn-accent">Open Trainer Dashboard</a>
-      {% elif current_user.is_admin() %}
-        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-accent">Open Administrator Control Panel</a>
-      {% endif %}
-    {% endif %}
-  </div>
-</div>
-
-<!-- System Statistics Bar -->
-<div class="stats-grid">
-  <div class="stat-card">
-    <span class="stat-label">Active Vocational Courses</span>
-    <span class="stat-value">{{ stats.total_courses }}</span>
-    <span class="stat-sub">Hands-on practical training tracks</span>
-  </div>
-  <div class="stat-card">
-    <span class="stat-label">Enrolled Student Trainees</span>
-    <span class="stat-value">{{ stats.active_students }}</span>
-    <span class="stat-sub">Active skill learners</span>
-  </div>
-  <div class="stat-card">
-    <span class="stat-label">Skill Domains</span>
-    <span class="stat-value">{{ stats.categories_count }}</span>
-    <span class="stat-sub">Managed training categories</span>
-  </div>
-  <div class="stat-card">
-    <span class="stat-label">Verified Certifications</span>
-    <span class="stat-value">100%</span>
-    <span class="stat-sub">Authenticated completion records</span>
-  </div>
-</div>
-
-<!-- Training Lifecycle Workflow Section -->
-<div class="card" style="margin-bottom: 2.5rem;">
-  <div class="card-header">
-    <h3>The KISS Vocational Training Lifecycle</h3>
-  </div>
-  <div class="card-body">
-    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
-      Our centralized platform manages each student's journey from course discovery through credential issuance:
+{% block hero %}
+<!-- Official KISS Website Hero Section -->
+<section class="kiss-official-hero">
+  <div class="kiss-hero-overlay"></div>
+  <div class="site-container kiss-hero-content">
+    <h1 class="hero-motto-tagline">Educate, Enable, Empower</h1>
+    <p class="hero-vtms-subline">Vocational Skill Training &amp; Career Readiness Portal</p>
+    <p class="hero-narrative-copy">
+      Empowering students of Kalinga Institute of Social Sciences (KISS) with hands-on technical trades, 
+      artisan craftsmanship, sustainable agriculture, and entrepreneurial skills for employment and self-reliance.
     </p>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; text-align: center;">
-      <div style="padding: 1rem; background: var(--bg-subtle); border-radius: var(--radius-md);">
-        <strong style="color: var(--primary); display: block; margin-bottom: 0.25rem;">1. Registration</strong>
-        <span style="font-size: 0.85rem; color: var(--text-muted);">Unique student ID & profile portfolio creation</span>
-      </div>
-      <div style="padding: 1rem; background: var(--bg-subtle); border-radius: var(--radius-md);">
-        <strong style="color: var(--primary); display: block; margin-bottom: 0.25rem;">2. Course Discovery</strong>
-        <span style="font-size: 0.85rem; color: var(--text-muted);">Browse trades, trainers, schedules & seats</span>
-      </div>
-      <div style="padding: 1rem; background: var(--bg-subtle); border-radius: var(--radius-md);">
-        <strong style="color: var(--primary); display: block; margin-bottom: 0.25rem;">3. Enrollment</strong>
-        <span style="font-size: 0.85rem; color: var(--text-muted);">Capacity-checked, instant seat allocation</span>
-      </div>
-      <div style="padding: 1rem; background: var(--bg-subtle); border-radius: var(--radius-md);">
-        <strong style="color: var(--primary); display: block; margin-bottom: 0.25rem;">4. Training & Attendance</strong>
-        <span style="font-size: 0.85rem; color: var(--text-muted);">Trainer-recorded sessions & 75% threshold</span>
-      </div>
-      <div style="padding: 1rem; background: var(--bg-subtle); border-radius: var(--radius-md);">
-        <strong style="color: var(--primary); display: block; margin-bottom: 0.25rem;">5. Practical Assessments</strong>
-        <span style="font-size: 0.85rem; color: var(--text-muted);">Rubric-scored projects & constructive feedback</span>
-      </div>
-      <div style="padding: 1rem; background: var(--bg-subtle); border-radius: var(--radius-md);">
-        <strong style="color: var(--primary); display: block; margin-bottom: 0.25rem;">6. PDF Certificate</strong>
-        <span style="font-size: 0.85rem; color: var(--text-muted);">Tamper-evident verified digital certificate</span>
-      </div>
+
+    <div class="hero-actions-center">
+      {% if not current_user.is_authenticated %}
+        <a href="{{ url_for('auth.register') }}" class="btn-hero-explore">Student Registration &rarr;</a>
+        <a href="{{ url_for('auth.login') }}" class="btn-hero-login">Portal Sign In</a>
+      {% else %}
+        {% if current_user.is_student() %}
+          <a href="{{ url_for('student.dashboard') }}" class="btn-hero-explore">Go to Student Dashboard &rarr;</a>
+          <a href="{{ url_for('student.courses') }}" class="btn-hero-login">Explore Courses</a>
+        {% elif current_user.is_trainer() %}
+          <a href="{{ url_for('trainer.dashboard') }}" class="btn-hero-explore">Open Trainer Dashboard &rarr;</a>
+          <a href="{{ url_for('trainer.courses') }}" class="btn-hero-login">Assigned Courses</a>
+        {% elif current_user.is_admin() %}
+          <a href="{{ url_for('admin.dashboard') }}" class="btn-hero-explore">Open Admin Control Panel &rarr;</a>
+          <a href="{{ url_for('admin.courses') }}" class="btn-hero-login">Manage Courses</a>
+        {% endif %}
+      {% endif %}
+    </div>
+
+    <!-- Trust Highlights Strip -->
+    <div class="hero-pills-strip">
+      <div class="hero-pill-item"></span> 100% Free Tuition for KISS Students</div>
+      <div class="hero-pill-item"></span> 75% Verified Lab Attendance Rigor</div>
+      <div class="hero-pill-item"></span> Continuous Practical Rubric Evaluations</div>
+      <div class="hero-pill-item"></span> Official Vector-Drawn PDF Certificates</div>
     </div>
   </div>
-</div>
+</section>
+<div class="tribal-pattern-divider" role="presentation"></div>
+{% endblock %}
 
-<!-- Training Categories Section -->
-<div class="page-header">
-  <div>
-    <h2>Explore Vocational Trades & Categories</h2>
-    <p>Comprehensive vocational paths structured for employability and enterprise</p>
+{% block content %}
+<!-- Section 1: The Three Circular Institutional Identity Elements -->
+<section id="identity-section" class="identity-tribute-section">
+  <div class="kiss-section-head">
+    <span class="kiss-kicker">Vision &amp; Leadership</span>
+    <h2 class="kiss-heading">Institutional Heritage &amp; Mentorship</h2>
+    <div class="kiss-head-line"></div>
+    <p class="kiss-subhead">Grounded in the humanitarian model of holistic tribal empowerment through practical livelihood mastery.</p>
   </div>
-</div>
 
-<div class="card-grid" style="margin-bottom: 2.5rem;">
-  {% for cat in categories %}
-    <div class="card" style="margin-bottom: 0;">
-      <div class="card-body">
-        <h4 style="font-size: 1.1rem; color: var(--primary-dark); margin-bottom: 0.5rem;">{{ cat.name }}</h4>
-        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
-          {{ cat.description or "Vocational skill training track designed for real-world competency." }}
-        </p>
-        <span class="badge badge-info">{{ cat.courses.count() }} Courses</span>
+  <div class="three-circles-flex">
+    <!-- 1. Prof. Dr. Achyuta Samanta -->
+    <div class="circular-identity-unit">
+      <div class="circle-frame">
+        <img src="{{ url_for('static', filename='img/dr_achyuta_samanta.png') }}" alt="Prof. Dr. Achyuta Samanta" class="circle-img">
       </div>
+      <h3 class="identity-title">Prof. Dr. Achyuta Samanta</h3>
+      <span class="identity-role">Founder, KIIT &amp; KISS</span>
+      <p class="identity-bio">Educationist, philanthropist and social reformer who founded KIIT and KISS to expand access to education and empower indigenous communities.</p>
     </div>
-  {% else %}
-    <p style="color: var(--text-muted);">Categories are being configured by the administrator.</p>
-  {% endfor %}
-</div>
 
-<!-- Featured Courses Section -->
-<div class="page-header">
-  <div>
-    <h2>Available Training Programs</h2>
-    <p>Current active skill batches open for student registration</p>
+    <!-- 2. KIIT -->
+    <div class="circular-identity-unit">
+      <div class="circle-frame">
+        <img
+          src="{{ url_for('static', filename='img/kiit_logo.png') }}"
+          alt="KIIT Logo"
+          class="identity-logo-img">
+      </div>
+      <h3 class="identity-title">KIIT</h3>
+      <span class="identity-role">DEEMED-TO-BE UNIVERSITY</span>
+      <p class="identity-bio">Providing higher education, academic expertise and institutional support for skill development.</p>
+    </div>
+
+    <!-- 3. KISS -->
+    <div class="circular-identity-unit">
+      <div class="circle-frame">
+        <img
+  src="{{ url_for('static', filename='img/kiss_logo.png') }}"
+  alt="KISS Logo"
+  class="identity-logo-img">
+      </div>
+      <h3 class="identity-title">KISS</h3>
+      <span class="identity-role">DEEMED-TO-BE UNIVERSITY</span>
+      <p class="identity-bio">Empowering indigenous students through free education, residential support, vocational training and holistic development.</p>
+    </div>
   </div>
-</div>
+</section>
 
-<div class="card-grid">
-  {% for course in featured_courses %}
-    <div class="card course-card">
-      <div class="card-body" style="display: flex; flex-direction: column; height: 100%;">
-        <span class="course-category">{{ course.category.name }}</span>
-        <h3 class="course-title">{{ course.title }}</h3>
-        <p class="course-desc">{{ course.description[:140] }}...</p>
+<!-- Section 2: Real Database Statistics Bar -->
+<section class="stats-strip-section" style="margin-bottom: 3rem;">
+  <div class="stats-grid">
+    <div class="stat-card">
+      <span class="stat-label">Active Vocational Courses</span>
+      <span class="stat-value">{{ stats.total_courses }}</span>
+      <span class="stat-sub">Hands-on practical training tracks</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Enrolled Student Trainees</span>
+      <span class="stat-value">{{ stats.active_students }}</span>
+      <span class="stat-sub">Active skill learners</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Skill Domains</span>
+      <span class="stat-value">{{ stats.categories_count }}</span>
+      <span class="stat-sub">Managed training categories</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Verified Certifications</span>
+      <span class="stat-value">100%</span>
+      <span class="stat-sub">Authenticated completion records</span>
+    </div>
+  </div>
+</section>
+
+<!-- Section 3: Vocational Skill Domains (Dynamic from DB) -->
+<section id="domains-section" class="domains-editorial-section" style="margin-bottom: 3.5rem;">
+  <div class="kiss-section-head">
+    <span class="kiss-kicker">Trade Disciplines</span>
+    <h2 class="kiss-heading">Explore Vocational Trades &amp; Categories</h2>
+    <div class="kiss-head-line"></div>
+    <p class="kiss-subhead">Comprehensive vocational paths structured for employability and enterprise</p>
+  </div>
+
+  <div class="domains-cards-grid">
+    {% for cat in categories %}
+      <div class="domain-tile-card">
+        <div class="domain-content">
+          <h3>{{ cat.name }}</h3>
+          <p>{{ cat.description or "Vocational skill training track designed for real-world competency." }}</p>
+          <span class="domain-link-action">{{ cat.courses.count() }} Courses Available &rarr;</span>
+        </div>
+      </div>
+    {% else %}
+      <p style="color: var(--text-muted); text-align: center; grid-column: 1 / -1;">Categories are being configured by the administrator.</p>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- Section 4: Standardized Training Journey Stepper -->
+<section id="journey-section" class="lifecycle-roadmap-section" style="margin-bottom: 3.5rem;">
+  <div class="kiss-section-head">
+    <span class="kiss-kicker">Standardized Lifecycle</span>
+    <h2 class="kiss-heading">The KISS Vocational Training Lifecycle</h2>
+    <div class="kiss-head-line"></div>
+    <p class="kiss-subhead">Our centralized platform manages each student's journey from course discovery through credential issuance:</p>
+  </div>
+
+  <div class="stepper-6-grid">
+    <div class="stepper-box-card">
+      <div class="stepper-num-badge">1</div>
+      <h4 class="stepper-box-title">Registration</h4>
+      <p class="stepper-box-desc">Unique student ID &amp; profile portfolio creation with KISS credential verification.</p>
+    </div>
+    <div class="stepper-box-card">
+      <div class="stepper-num-badge">2</div>
+      <h4 class="stepper-box-title">Course Discovery</h4>
+      <p class="stepper-box-desc">Browse trades, trainers, schedules, seat limits, and practical competency goals.</p>
+    </div>
+    <div class="stepper-box-card">
+      <div class="stepper-num-badge">3</div>
+      <h4 class="stepper-box-title">Enrollment</h4>
+      <p class="stepper-box-desc">Capacity-checked, instant seat allocation preventing duplicate registrations.</p>
+    </div>
+    <div class="stepper-box-card">
+      <div class="stepper-num-badge">4</div>
+      <h4 class="stepper-box-title">Training &amp; Attendance</h4>
+      <p class="stepper-box-desc">Trainer-recorded lab sessions with enforcement of the mandatory 75% attendance threshold.</p>
+    </div>
+    <div class="stepper-box-card">
+      <div class="stepper-num-badge">5</div>
+      <h4 class="stepper-box-title">Practical Assessments</h4>
+      <p class="stepper-box-desc">Rubric-scored practical projects needing a 50% minimum passing mark and constructive feedback.</p>
+    </div>
+    <div class="stepper-box-card">
+      <div class="stepper-num-badge">6</div>
+      <h4 class="stepper-box-title">PDF Certificate</h4>
+      <p class="stepper-box-desc">Tamper-evident, verified digital completion certificate rendered via vector ReportLab.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Section 5: Available Training Programs (Dynamic from DB) -->
+<section id="featured-courses-section" class="featured-courses-section" style="margin-bottom: 2.5rem;">
+  <div class="kiss-section-head" style="margin-bottom: 2rem;">
+    <span class="kiss-kicker">Current Offerings</span>
+    <h2 class="kiss-heading">Available Training Programs</h2>
+    <div class="kiss-head-line"></div>
+    <p class="kiss-subhead">Current active skill batches open for student registration</p>
+  </div>
+
+  <div class="course-3col-grid">
+    {% for course in featured_courses %}
+      <article class="course-institution-card">
+        <div class="card-top-tag-row">
+          <span class="course-domain-pill">{{ course.category.name }}</span>
+          <span class="course-seats-pill">{{ course.available_seats }} / {{ course.max_seats }} Left</span>
+        </div>
+        <h3 class="course-card-heading">{{ course.title }}</h3>
+        <p class="course-card-body-text">{{ course.description[:140] }}{% if course.description|length > 140 %}...{% endif %}</p>
         
-        <div class="course-meta">
-          <div><strong>Code:</strong> {{ course.course_code }}</div>
-          <div><strong>Duration:</strong> {{ course.duration_weeks }} Wks</div>
-          <div><strong>Seats:</strong> {{ course.available_seats }} / {{ course.max_seats }} Left</div>
+        <div class="course-specs-list">
+          <div><strong>Code:</strong> <code>{{ course.course_code }}</code> &bull; <strong>Duration:</strong> {{ course.duration_weeks }} Wks</div>
+          <div><strong>Schedule:</strong> {{ course.training_schedule }}</div>
           <div><strong>Trainer:</strong> {{ course.trainer.full_name if course.trainer else 'Assigned Faculty' }}</div>
         </div>
 
         <div style="margin-top: auto; padding-top: 1rem;">
           {% if current_user.is_authenticated and current_user.is_student() %}
-            <a href="{{ url_for('student.course_detail', course_id=course.id) }}" class="btn btn-primary" style="width: 100%;">View Details & Enroll</a>
+            <a href="{{ url_for('student.course_detail', course_id=course.id) }}" class="btn-enroll-full">View Details &amp; Enroll &gt;</a>
+          {% elif current_user.is_authenticated and current_user.is_admin() %}
+            <a href="{{ url_for('admin.courses') }}" class="btn-enroll-full">Manage in Admin &gt;</a>
+          {% elif current_user.is_authenticated and current_user.is_trainer() %}
+            <a href="{{ url_for('trainer.courses') }}" class="btn-enroll-full">View Assigned Courses &gt;</a>
           {% else %}
-            <a href="{{ url_for('auth.login') }}" class="btn btn-outline" style="width: 100%;">Login to Enroll</a>
+            <a href="{{ url_for('auth.login') }}" class="btn-enroll-full">Login to Enroll &gt;</a>
           {% endif %}
         </div>
-      </div>
-    </div>
-  {% else %}
-    <p style="color: var(--text-muted);">No training programs are active at this moment.</p>
-  {% endfor %}
-</div>
+      </article>
+    {% else %}
+      <p style="color: var(--text-muted); text-align: center; grid-column: 1 / -1;">No training programs are active at this moment.</p>
+    {% endfor %}
+  </div>
+</section>
 {% endblock %}

@@ -6,6 +6,7 @@ from werkzeug.utils import secure_filename
 from app.auth import auth_bp
 from app.models import db, User, StudentProfile, TrainerProfile
 from app.utils.audit import log_audit
+from app.utils.validators import validate_phone_number, validate_username, validate_email_format
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -72,6 +73,25 @@ def register():
         if not username or not email or not password or not full_name:
             flash('Full Name, Username, Email, and Password are required fields.', 'warning')
             return render_template('auth/register.html')
+
+        # Validate Username Format
+        u_valid, u_msg = validate_username(username)
+        if not u_valid:
+            flash(u_msg, 'danger')
+            return render_template('auth/register.html')
+
+        # Validate Email Format
+        e_valid, e_msg = validate_email_format(email)
+        if not e_valid:
+            flash(e_msg, 'danger')
+            return render_template('auth/register.html')
+
+        # Validate Contact Number if provided
+        if contact_number:
+            p_valid, p_msg = validate_phone_number(contact_number)
+            if not p_valid:
+                flash(f"Invalid Contact Number: {p_msg}", 'danger')
+                return render_template('auth/register.html')
 
         if password != confirm_password:
             flash('Passwords do not match.', 'danger')
@@ -141,9 +161,14 @@ def profile():
     if request.method == 'POST':
         # Update permitted profile fields
         if current_user.is_student() and student_profile:
+            new_contact = request.form.get('contact_number', '').strip()
+            if new_contact:
+                p_valid, p_msg = validate_phone_number(new_contact)
+                if not p_valid:
+                    flash(f"Invalid Contact Number: {p_msg}", 'danger')
+                    return redirect(url_for('auth.profile'))
+            student_profile.contact_number = new_contact
             student_profile.full_name = request.form.get('full_name', student_profile.full_name).strip()
-            student_profile.academic_level = request.form.get('academic_level', student_profile.academic_level).strip()
-            student_profile.contact_number = request.form.get('contact_number', student_profile.contact_number).strip()
             student_profile.educational_qualification = request.form.get('educational_qualification', student_profile.educational_qualification).strip()
             student_profile.skills_and_interests = request.form.get('skills_and_interests', student_profile.skills_and_interests).strip()
             student_profile.previous_training = request.form.get('previous_training', student_profile.previous_training).strip()
@@ -164,8 +189,14 @@ def profile():
             flash('Your student profile has been updated successfully.', 'success')
 
         elif current_user.is_trainer() and trainer_profile:
+            new_contact = request.form.get('contact_number', '').strip()
+            if new_contact:
+                p_valid, p_msg = validate_phone_number(new_contact)
+                if not p_valid:
+                    flash(f"Invalid Contact Number: {p_msg}", 'danger')
+                    return redirect(url_for('auth.profile'))
+            trainer_profile.contact_number = new_contact
             trainer_profile.full_name = request.form.get('full_name', trainer_profile.full_name).strip()
-            trainer_profile.contact_number = request.form.get('contact_number', trainer_profile.contact_number).strip()
             trainer_profile.qualification = request.form.get('qualification', trainer_profile.qualification).strip()
             trainer_profile.department_or_trade = request.form.get('department_or_trade', trainer_profile.department_or_trade).strip()
             trainer_profile.bio = request.form.get('bio', trainer_profile.bio).strip()

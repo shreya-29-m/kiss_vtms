@@ -42,14 +42,15 @@ def generate_certificate_pdf(student_name, student_id_code, course_title, course
         dy = corner_size if y < page_height / 2 else -corner_size
         c.line(x, y + dy, x + dx, y)
 
-    # Academic Project Disclaimer / Watermark Banner
-    c.setFillColor(colors.HexColor('#718096'))
-    c.setFont("Helvetica-Bold", 8)
+    # Institutional Header Banner
+    c.setFillColor(colors.HexColor('#153C2A'))
+    c.setFont("Helvetica-Bold", 9)
     c.drawCentredString(page_width / 2, page_height - 42, 
                         "KALINGA INSTITUTE OF SOCIAL SCIENCES (KISS) • VOCATIONAL TRAINING MANAGEMENT SYSTEM")
-    c.setFont("Helvetica-Oblique", 7)
+    c.setFont("Helvetica-Bold", 7)
+    c.setFillColor(colors.HexColor('#A9573D'))
     c.drawCentredString(page_width / 2, page_height - 52,
-                        "[ ACADEMIC SOFTWARE ENGINEERING PROJECT DEMONSTRATION CERTIFICATE - NOT AN OFFICIAL UNIVERSITY RECORD ]")
+                        "BHUBANESWAR, ODISHA, INDIA • DIRECTORATE OF VOCATIONAL SKILL DEVELOPMENT")
     
     # Certificate Title Header
     c.setFillColor(colors.HexColor('#0B2545'))

@@ -91,3 +91,31 @@ def test_logout(client, init_database):
     response = client.get('/auth/logout', follow_redirects=True)
     assert response.status_code == 200
     assert b'You have been logged out securely' in response.data
+
+def test_student_registration_invalid_phone_rejected(client, init_database):
+    """UNIT 2 & UNIT 3: Test boundary & input validation rejects invalid phone numbers."""
+    response = client.post('/auth/register', data={
+        'username': 'phone_test_user',
+        'email': 'phone.test@kiss.ac.in',
+        'password': 'SecurePass123',
+        'confirm_password': 'SecurePass123',
+        'full_name': 'Phone Test Trainee',
+        'academic_level': '+2 Arts',
+        'contact_number': 'efew382109',  # Gibberish input from user screenshot
+        'skills_and_interests': 'Tailoring'
+    }, follow_redirects=True)
+    assert response.status_code == 200
+    assert b'Invalid Contact Number' in response.data
+
+def test_student_registration_invalid_email_rejected(client, init_database):
+    """UNIT 2 & UNIT 3: Test boundary & input validation rejects malformed email."""
+    response = client.post('/auth/register', data={
+        'username': 'email_test_user',
+        'email': 'not-an-email',
+        'password': 'SecurePass123',
+        'confirm_password': 'SecurePass123',
+        'full_name': 'Email Test Trainee',
+        'academic_level': '+2 Arts'
+    }, follow_redirects=True)
+    assert response.status_code == 200
+    assert b'valid email address' in response.data
