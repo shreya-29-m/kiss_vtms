@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # KISS Vocational Training Management System (VTMS)
 ### College Software Engineering (SE) Subject Project &bull; Academic Year 2026
 
@@ -190,3 +191,6 @@ Detailed project documentation has been prepared in the `docs/` directory:
 
 ## ⚖️ Academic Project Disclaimer
 *This project is an academic Software Engineering demonstration application built to illustrate educational systems architecture for vocational training scenarios. Demonstration student names, course records, and sample certificates are fictional evaluation data and do not represent official records of Kalinga Institute of Social Sciences (KISS).*
+=======
+# kiss_vtms
+>>>>>>> origin/main
