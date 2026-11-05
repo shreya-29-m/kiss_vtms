@@ -19,3 +19,8 @@ env/
 # OS files
 .DS_Store
 Thumbs.db
+# Local database
+app/kiss_vtms.db
+
+# Generated certificates
+app/static/uploads/certificates/
