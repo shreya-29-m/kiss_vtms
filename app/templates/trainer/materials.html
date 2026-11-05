@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Course Materials: {{ course.title }} - KISS VTMS Trainer Portal{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div style="font-size: 0.85rem; text-transform: uppercase; color: var(--accent); font-weight: 700;">
+      Learning Resources &bull; {{ course.course_code }}
+    </div>
+    <h2>{{ course.title }}</h2>
+    <p>Upload lecture notes, practical task sheets, laboratory handbooks, and reference links for trainees</p>
+  </div>
+  <div>
+    <a href="{{ url_for('trainer.course_detail', course_id=course.id) }}" class="btn btn-secondary">&larr; Back to Course</a>
+  </div>
+</div>
+
+<div class="card-grid" style="grid-template-columns: 1fr 1fr;">
+  <!-- Upload New Material Form -->
+  <div class="card">
+    <div class="card-header">
+      <h3>+ Upload New Learning Resource</h3>
+    </div>
+    <div class="card-body">
+      <form method="POST" action="{{ url_for('trainer.materials', course_id=course.id) }}" enctype="multipart/form-data">
+        <div class="form-group">
+          <label class="form-label" for="title">Resource Title *</label>
+          <input type="text" id="title" name="title" class="form-control" placeholder="e.g. Lab Manual: Soldering Safety" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="material_type">Resource Type *</label>
+          <select id="material_type" name="material_type" class="form-control">
+            <option value="notes">Lecture / Workshop Notes</option>
+            <option value="guide">Practical Lab Guide</option>
+            <option value="assignment">Assignment Brief</option>
+            <option value="syllabus">Syllabus / Blueprint</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="description">Summary / Instructions</label>
+          <textarea id="description" name="description" class="form-control" placeholder="Brief explanation of the resource..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="material_file">Upload Document File (PDF, DOCX, ZIP, PNG, JPG)</label>
+          <input type="file" id="material_file" name="material_file" class="form-control">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="link_url">External Resource URL (Optional)</label>
+          <input type="url" id="link_url" name="link_url" class="form-control" placeholder="https://...">
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Upload Resource</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Uploaded Materials List -->
+  <div class="card">
+    <div class="card-header">
+      <h3>Uploaded Resources ({{ materials|length }})</h3>
+    </div>
+    <div class="card-body">
+      {% if materials %}
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+          {% for m in materials %}
+            <div style="padding: 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: var(--bg-card);">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.35rem;">
+                <span class="badge badge-info">{{ m.material_type }}</span>
+                <span style="font-size: 0.75rem; color: var(--text-light);">{{ m.uploaded_at|format_date }}</span>
+              </div>
+              <h4 style="font-size: 1rem; color: var(--primary-dark); margin-bottom: 0.25rem;">{{ m.title }}</h4>
+              <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+                {{ m.description or 'No additional instructions provided.' }}
+              </p>
+              <div>
+                {% if m.file_path %}
+                  <a href="{{ url_for('static', filename='uploads/materials/' + m.file_path) }}" class="btn btn-sm btn-outline" target="_blank" download>
+                    &darr; Download {{ m.file_path }}
+                  </a>
+                {% elif m.link_url %}
+                  <a href="{{ m.link_url }}" class="btn btn-sm btn-outline" target="_blank">
+                    &rarr; External Link
+                  </a>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p style="color: var(--text-muted); padding: 1.5rem 0; text-align: center;">No learning materials have been uploaded for this course yet.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

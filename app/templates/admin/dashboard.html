@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}Administrator Dashboard - KISS Vocational Training Management System{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Administrator Control Center</h2>
+    <p>Governance, course lifecycle oversight, user management, and system audit logs</p>
+  </div>
+  <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+    <a href="{{ url_for('admin.create_course') }}" class="btn btn-primary">+ Create Course</a>
+    <a href="{{ url_for('admin.categories') }}" class="btn btn-outline">+ Add Category</a>
+    <a href="{{ url_for('admin.create_user') }}" class="btn btn-accent">+ Register User</a>
+    <a href="{{ url_for('admin.export_csv') }}" class="btn btn-secondary">&darr; Export CSV</a>
+  </div>
+</div>
+
+<!-- Key Institutional Metrics -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <span class="stat-label">Total Courses</span>
+    <span class="stat-value">{{ stats.total_courses }}</span>
+    <span class="stat-sub">{{ stats.active_courses }} currently active</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Registered Students</span>
+    <span class="stat-value">{{ stats.total_students }}</span>
+    <span class="stat-sub">Student trainee profiles</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Faculty Trainers</span>
+    <span class="stat-value">{{ stats.total_trainers }}</span>
+    <span class="stat-sub">Vocational trade instructors</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Enrollments</span>
+    <span class="stat-value">{{ stats.total_enrollments }}</span>
+    <span class="stat-sub">{{ stats.active_enrollments }} active trainees</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Skill Domains</span>
+    <span class="stat-value">{{ stats.total_categories }}</span>
+    <span class="stat-sub">Active categories</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Issued Certificates</span>
+    <span class="stat-value">{{ stats.total_certificates }}</span>
+    <span class="stat-sub">Verified completions</span>
+  </div>
+</div>
+
+<div class="card-grid" style="grid-template-columns: 2fr 1fr;">
+  <!-- Recent Enrollments -->
+  <div class="card">
+    <div class="card-header">
+      <h3>Recent Trainee Enrollments</h3>
+      <a href="{{ url_for('admin.enrollments') }}" class="btn btn-sm btn-outline">View All</a>
+    </div>
+    <div class="card-body">
+      {% if recent_enrollments %}
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Course</th>
+                <th>Category</th>
+                <th>Enrolled Date</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for enr in recent_enrollments %}
+                <tr>
+                  <td>
+                    <strong>{{ enr.student.full_name }}</strong>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">{{ enr.student.student_id_code }}</div>
+                  </td>
+                  <td>{{ enr.course.title }}</td>
+                  <td>{{ enr.course.category.name }}</td>
+                  <td>{{ enr.enrolled_at|format_date }}</td>
+                  <td>
+                    <span class="badge {% if enr.status == 'completed' %}badge-success{% elif enr.status == 'enrolled' %}badge-info{% else %}badge-gray{% endif %}">
+                      {{ enr.status }}
+                    </span>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <p style="color: var(--text-muted); padding: 1rem 0;">No enrollments recorded yet.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Recent Certificates -->
+  <div class="card">
+    <div class="card-header">
+      <h3>Recently Issued Certificates</h3>
+    </div>
+    <div class="card-body">
+      {% if recent_certificates %}
+        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+          {% for c in recent_certificates %}
+            <div style="padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: var(--bg-subtle);">
+              <div style="display: flex; justify-content: space-between;">
+                <strong>{{ c.student.full_name }}</strong>
+                <span class="badge badge-success">{{ c.grade }}</span>
+              </div>
+              <div style="font-size: 0.8rem; color: var(--text-muted);">{{ c.course.title }}</div>
+              <div style="font-size: 0.75rem; color: var(--text-light); margin-top: 0.25rem;">
+                ID: <code>{{ c.certificate_code }}</code> &bull; {{ c.issue_date|format_date }}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p style="color: var(--text-muted); padding: 1rem 0;">No certificates issued yet.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- System Audit Log Trail -->
+<div class="card">
+  <div class="card-header">
+    <h3>Recent System Audit Trail</h3>
+    <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-sm btn-outline">Full Audit Logs</a>
+  </div>
+  <div class="card-body">
+    {% if recent_logs %}
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Action</th>
+              <th>Initiated By</th>
+              <th>Entity</th>
+              <th>Details</th>
+              <th>IP Address</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for l in recent_logs %}
+              <tr>
+                <td style="white-space: nowrap;"><span style="font-size: 0.8rem;">{{ l.timestamp.strftime('%d %b %Y, %H:%M:%S') }}</span></td>
+                <td><strong>{{ l.action }}</strong></td>
+                <td>{{ l.user.username if l.user else 'System' }}</td>
+                <td><span class="badge badge-gray">{{ l.entity_type or 'General' }}</span></td>
+                <td><span style="font-size: 0.85rem; color: var(--text-muted);">{{ l.details or '—' }}</span></td>
+                <td><code>{{ l.ip_address }}</code></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p style="color: var(--text-muted);">No audit logs recorded yet.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

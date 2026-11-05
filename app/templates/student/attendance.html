@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}My Attendance - KISS Vocational Training Management System{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Attendance Adherence Record</h2>
+    <p>Track your verifiable session attendance for vocational certification eligibility</p>
+  </div>
+</div>
+
+{% if enrolled_courses %}
+  <!-- Course Selector Bar -->
+  <div class="filter-bar">
+    <label style="font-weight: 600; font-size: 0.9rem;">Select Enrolled Course:</label>
+    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+      {% for c in enrolled_courses %}
+        <a href="{{ url_for('student.attendance', course_id=c.id) }}"
+           class="btn btn-sm {% if selected_course and selected_course.id == c.id %}btn-primary{% else %}btn-outline{% endif %}">
+          {{ c.title }}
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+
+  {% if selected_course %}
+    <!-- Attendance Metrics Overview -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-label">Calculated Attendance</span>
+        <span class="stat-value" style="color: {% if stats.percentage >= selected_course.attendance_requirement %}var(--success){% else %}var(--danger){% endif %};">
+          {{ stats.percentage }}%
+        </span>
+        <span class="stat-sub">Minimum requirement: {{ selected_course.attendance_requirement }}%</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Sessions Attended</span>
+        <span class="stat-value">{{ stats.present }}</span>
+        <span class="stat-sub">Present or excused</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Total Conducted Sessions</span>
+        <span class="stat-value">{{ stats.total }}</span>
+        <span class="stat-sub">Sessions logged by trainer</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Eligibility Status</span>
+        <span class="stat-value" style="font-size: 1.25rem;">
+          {% if stats.percentage >= selected_course.attendance_requirement %}
+            <span class="badge badge-success">Eligible</span>
+          {% else %}
+            <span class="badge badge-danger">Below Required</span>
+          {% endif %}
+        </span>
+        <span class="stat-sub">Must meet threshold for certificate</span>
+      </div>
+    </div>
+
+    <!-- Attendance Log Table -->
+    <div class="card">
+      <div class="card-header">
+        <h3>Session Attendance Log: {{ selected_course.title }}</h3>
+      </div>
+      <div class="card-body">
+        {% if records %}
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Session Date</th>
+                  <th>Attendance Status</th>
+                  <th>Faculty Remarks</th>
+                  <th>Recorded On</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for r in records %}
+                  <tr>
+                    <td><strong>{{ r.attendance_date|format_date }}</strong></td>
+                    <td>
+                      {% if r.status == 'present' %}
+                        <span class="badge badge-success">&check; Present</span>
+                      {% elif r.status == 'late' %}
+                        <span class="badge badge-warning">Late</span>
+                      {% elif r.status == 'excused' %}
+                        <span class="badge badge-info">Excused</span>
+                      {% else %}
+                        <span class="badge badge-danger">&cross; Absent</span>
+                      {% endif %}
+                    </td>
+                    <td>{{ r.remarks or 'Regular session' }}</td>
+                    <td><span style="font-size: 0.8rem; color: var(--text-light);">{{ r.recorded_at|format_date }}</span></td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <p style="color: var(--text-muted); padding: 1.5rem 0; text-align: center;">
+            No attendance records have been posted yet for this course.
+          </p>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
+{% else %}
+  <div class="card" style="text-align: center; padding: 2.5rem;">
+    <p style="color: var(--text-muted); margin-bottom: 1rem;">You are not enrolled in any vocational courses yet.</p>
+    <a href="{{ url_for('student.courses') }}" class="btn btn-primary">Browse Courses</a>
+  </div>
+{% endif %}
+{% endblock %}

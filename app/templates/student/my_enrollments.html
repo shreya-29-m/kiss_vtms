@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}My Enrollments - KISS Vocational Training Management System{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>My Vocational Training Enrollments</h2>
+    <p>Track your active courses, attendance adherence, assessment achievements, and certificates</p>
+  </div>
+  <div>
+    <a href="{{ url_for('student.courses') }}" class="btn btn-accent">+ Browse More Courses</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h3>Enrolled Training Programs</h3>
+  </div>
+  <div class="card-body">
+    {% if items %}
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Course Details</th>
+              <th>Category</th>
+              <th>Enrolled Date</th>
+              <th>Attendance Adherence</th>
+              <th>Assessment Performance</th>
+              <th>Status</th>
+              <th>Official Certificate</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for it in items %}
+              <tr>
+                <td>
+                  <strong><a href="{{ url_for('student.course_detail', course_id=it.enrollment.course.id) }}">{{ it.enrollment.course.title }}</a></strong>
+                  <div style="font-size: 0.8rem; color: var(--text-muted);">
+                    Code: {{ it.enrollment.course.course_code }} &bull; {{ it.enrollment.course.duration_weeks }} Wks
+                  </div>
+                </td>
+                <td>{{ it.enrollment.course.category.name }}</td>
+                <td>{{ it.enrollment.enrolled_at|format_date }}</td>
+                <td>
+                  <div><strong>{{ it.attendance.percentage }}%</strong> <span style="font-size: 0.75rem; color: var(--text-muted);">(Min {{ it.enrollment.course.attendance_requirement }}%)</span></div>
+                  <div class="progress-bar-container" style="width: 120px;">
+                    <div class="progress-bar-fill {% if it.attendance.percentage >= it.enrollment.course.attendance_requirement %}progress-bar-success{% else %}progress-bar-warning{% endif %}"
+                         style="width: {{ [it.attendance.percentage, 100]|min }}%;"></div>
+                  </div>
+                  <div style="font-size: 0.75rem; color: var(--text-light); margin-top: 0.2rem;">
+                    {{ it.attendance.present }} / {{ it.attendance.total }} sessions
+                  </div>
+                </td>
+                <td>
+                  <div><strong>{{ it.assessment.average_percentage }}%</strong> <span style="font-size: 0.75rem; color: var(--text-muted);">(Pass {{ it.enrollment.course.passing_score }}%)</span></div>
+                  <div class="progress-bar-container" style="width: 120px;">
+                    <div class="progress-bar-fill {% if it.assessment.average_percentage >= it.enrollment.course.passing_score %}progress-bar-success{% else %}progress-bar-danger{% endif %}"
+                         style="width: {{ [it.assessment.average_percentage, 100]|min }}%;"></div>
+                  </div>
+                  <div style="font-size: 0.75rem; color: var(--text-light); margin-top: 0.2rem;">
+                    {{ it.assessment.completed }} of {{ it.assessment.count }} completed
+                  </div>
+                </td>
+                <td>
+                  {% if it.enrollment.status == 'completed' %}
+                    <span class="badge badge-success">Completed</span>
+                  {% elif it.enrollment.status == 'enrolled' %}
+                    <span class="badge badge-info">Active</span>
+                  {% else %}
+                    <span class="badge badge-gray">{{ it.enrollment.status }}</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if it.certificate %}
+                    <a href="{{ url_for('student.download_certificate', course_id=it.enrollment.course.id) }}" class="btn btn-sm btn-success">
+                      &darr; Download PDF
+                    </a>
+                  {% elif it.eligible %}
+                    <a href="{{ url_for('student.download_certificate', course_id=it.enrollment.course.id) }}" class="btn btn-sm btn-accent">
+                      Generate Certificate
+                    </a>
+                  {% else %}
+                    <span class="badge badge-warning" title="{{ it.reason }}">Requirements Incomplete</span>
+                    <div style="font-size: 0.7rem; color: var(--text-muted); max-width: 150px; margin-top: 0.2rem;">
+                      {{ it.reason }}
+                    </div>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div style="text-align: center; padding: 2rem;">
+        <p style="color: var(--text-muted); margin-bottom: 1rem;">You have not enrolled in any vocational training programs yet.</p>
+        <a href="{{ url_for('student.courses') }}" class="btn btn-primary">Browse Available Courses</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

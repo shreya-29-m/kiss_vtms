@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}Trainer Dashboard - KISS Vocational Training Management System{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Trainer Instruction Portal</h2>
+    <p>Welcome, <strong>{{ trainer.full_name }}</strong> (ID: <code>{{ trainer.trainer_id_code }}</code> &bull; Trade: {{ trainer.department_or_trade or 'Vocational Education' }})</p>
+  </div>
+</div>
+
+<!-- Stat Cards -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <span class="stat-label">Assigned Courses</span>
+    <span class="stat-value">{{ total_courses }}</span>
+    <span class="stat-sub">Active instruction tracks</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Enrolled Trainees</span>
+    <span class="stat-value">{{ total_students }}</span>
+    <span class="stat-sub">Students in your batches</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Sessions Scheduled</span>
+    <span class="stat-value">{{ total_sessions }}</span>
+    <span class="stat-sub">Laboratory & lecture modules</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Assessments Created</span>
+    <span class="stat-value">{{ total_assessments }}</span>
+    <span class="stat-sub">Practical and theory evaluations</span>
+  </div>
+</div>
+
+<!-- Assigned Courses Roster -->
+<div class="card">
+  <div class="card-header">
+    <h3>My Assigned Training Programs</h3>
+  </div>
+  <div class="card-body">
+    {% if courses %}
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Course Title & Code</th>
+              <th>Category</th>
+              <th>Schedule</th>
+              <th>Enrolled Trainees</th>
+              <th>Batch Period</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in courses %}
+              <tr>
+                <td>
+                  <strong><a href="{{ url_for('trainer.course_detail', course_id=c.id) }}">{{ c.title }}</a></strong>
+                  <div style="font-size: 0.8rem; color: var(--text-muted);">{{ c.course_code }} &bull; {{ c.duration_weeks }} Weeks</div>
+                </td>
+                <td>{{ c.category.name }}</td>
+                <td>{{ c.training_schedule }}</td>
+                <td>
+                  <strong>{{ c.enrolled_count }}</strong> / {{ c.max_seats }}
+                  <div class="progress-bar-container" style="width: 100px;">
+                    <div class="progress-bar-fill progress-bar-success" style="width: {{ [(c.enrolled_count / c.max_seats * 100)|round, 100]|min }}%;"></div>
+                  </div>
+                </td>
+                <td><span style="font-size: 0.85rem;">{{ c.start_date|format_date }} &ndash; {{ c.end_date|format_date }}</span></td>
+                <td>
+                  <div style="display: flex; gap: 0.35rem; flex-wrap: wrap;">
+                    <a href="{{ url_for('trainer.attendance', course_id=c.id) }}" class="btn btn-sm btn-primary">Attendance</a>
+                    <a href="{{ url_for('trainer.assessments', course_id=c.id) }}" class="btn btn-sm btn-accent">Assessments</a>
+                    <a href="{{ url_for('trainer.materials', course_id=c.id) }}" class="btn btn-sm btn-outline">Materials</a>
+                    <a href="{{ url_for('trainer.course_report', course_id=c.id) }}" class="btn btn-sm btn-secondary">Report</a>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p style="color: var(--text-muted); padding: 1.5rem; text-align: center;">
+        No training programs have been assigned to your trainer profile yet. Please coordinate with the VTMS Administrator.
+      </p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Upcoming Sessions -->
+<div class="card">
+  <div class="card-header">
+    <h3>Upcoming Instruction Sessions</h3>
+  </div>
+  <div class="card-body">
+    {% if upcoming_sessions %}
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Course</th>
+              <th>Topic / Workshop Task</th>
+              <th>Room / Lab</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in upcoming_sessions %}
+              <tr>
+                <td><strong>{{ s.session_date|format_date }}</strong></td>
+                <td>{{ s.start_time }} - {{ s.end_time }}</td>
+                <td>{{ s.course.title }} ({{ s.course.course_code }})</td>
+                <td>{{ s.topic }}</td>
+                <td><span class="badge badge-gray">{{ s.room_or_lab or 'Workshop Room' }}</span></td>
+                <td>
+                  <a href="{{ url_for('trainer.attendance', course_id=s.course_id, date=s.session_date.strftime('%Y-%m-%d')) }}" class="btn btn-sm btn-primary">
+                    Mark Attendance
+                  </a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p style="color: var(--text-muted); padding: 1rem 0;">No upcoming sessions scheduled.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

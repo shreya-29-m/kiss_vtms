@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Assessments & Results - KISS Vocational Training Management System{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Practical Assessments & Performance Results</h2>
+    <p>Review your practical benchmarks, project scores, and instructor feedback</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h3>Course Assessments</h3>
+  </div>
+  <div class="card-body">
+    {% if assessments_data %}
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Assessment</th>
+              <th>Course</th>
+              <th>Type</th>
+              <th>Due Date</th>
+              <th>Score / Max</th>
+              <th>Percentage</th>
+              <th>Instructor Feedback</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in assessments_data %}
+              <tr>
+                <td>
+                  <strong>{{ item.assessment.title }}</strong>
+                  <div style="font-size: 0.8rem; color: var(--text-muted);">{{ item.assessment.description or 'Practical evaluation' }}</div>
+                </td>
+                <td>{{ item.assessment.course.title }}</td>
+                <td><span class="badge badge-gray">{{ item.assessment.assessment_type }}</span></td>
+                <td>{{ item.assessment.due_date|format_date if item.assessment.due_date else 'Continuous' }}</td>
+                <td>
+                  {% if item.is_submitted %}
+                    <strong>{{ item.result.marks_obtained }}</strong> / {{ item.assessment.max_marks }}
+                  {% else %}
+                    <span class="badge badge-warning">Pending Evaluation</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if item.is_submitted %}
+                    <span class="badge {% if item.result.percentage >= item.assessment.course.passing_score %}badge-success{% else %}badge-danger{% endif %}">
+                      {{ item.result.percentage }}%
+                    </span>
+                  {% else %}
+                    &mdash;
+                  {% endif %}
+                </td>
+                <td style="max-width: 250px;">
+                  {% if item.is_submitted and item.result.feedback %}
+                    <span style="font-size: 0.85rem; color: var(--text-main);">{{ item.result.feedback }}</span>
+                  {% elif item.is_submitted %}
+                    <span style="font-size: 0.8rem; color: var(--text-light);">Satisfactory performance</span>
+                  {% else %}
+                    <span style="font-size: 0.8rem; color: var(--text-light);">&mdash;</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div style="text-align: center; padding: 2rem;">
+        <p style="color: var(--text-muted);">No assessments have been scheduled for your enrolled courses yet.</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

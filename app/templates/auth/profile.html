@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile - KISS Vocational Training Management System{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>User Profile & Portfolio</h2>
+    <p>Manage your account settings, educational profile, and vocational credentials</p>
+  </div>
+</div>
+
+<div class="card-grid" style="grid-template-columns: 1fr 2fr;">
+  <!-- Left Side: Profile Summary Card -->
+  <div class="card">
+    <div class="card-header">
+      <h3>Identity Summary</h3>
+    </div>
+    <div class="card-body" style="text-align: center;">
+      <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--primary-light); color: #fff; font-size: 2rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+        {{ current_user.username[0].upper() }}
+      </div>
+      
+      <h4 style="font-size: 1.2rem; color: var(--primary-dark);">
+        {% if current_user.is_student() and student %}
+          {{ student.full_name }}
+        {% elif current_user.is_trainer() and trainer %}
+          {{ trainer.full_name }}
+        {% else %}
+          {{ current_user.username }}
+        {% endif %}
+      </h4>
+      
+      <div style="margin-top: 0.5rem;">
+        <span class="role-pill role-{{ current_user.role }}">{{ current_user.role }}</span>
+      </div>
+
+      <div style="margin-top: 1.5rem; text-align: left; font-size: 0.9rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+        <div style="margin-bottom: 0.5rem;">
+          <strong>Username:</strong> {{ current_user.username }}
+        </div>
+        <div style="margin-bottom: 0.5rem;">
+          <strong>Email:</strong> {{ current_user.email }}
+        </div>
+        {% if current_user.is_student() and student %}
+          <div style="margin-bottom: 0.5rem;">
+            <strong>Student ID:</strong> <span class="badge badge-info">{{ student.student_id_code }}</span>
+          </div>
+          <div style="margin-bottom: 0.5rem;">
+            <strong>Class:</strong> {{ student.academic_level or 'Not specified' }}
+          </div>
+        {% elif current_user.is_trainer() and trainer %}
+          <div style="margin-bottom: 0.5rem;">
+            <strong>Trainer ID:</strong> <span class="badge badge-info">{{ trainer.trainer_id_code }}</span>
+          </div>
+          <div style="margin-bottom: 0.5rem;">
+            <strong>Trade/Dept:</strong> {{ trainer.department_or_trade or 'Vocational' }}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Side: Edit Profile Form -->
+  <div class="card">
+    <div class="card-header">
+      <h3>Edit Profile Information</h3>
+    </div>
+    <div class="card-body">
+      <form method="POST" action="{{ url_for('auth.profile') }}" enctype="multipart/form-data">
+        {% if current_user.is_student() and student %}
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="full_name">Full Name</label>
+              <input type="text" id="full_name" name="full_name" class="form-control" value="{{ student.full_name }}" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="academic_level">Academic Level</label>
+              <input type="text" id="academic_level" name="academic_level" class="form-control" value="{{ student.academic_level or '' }}">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="contact_number">Contact Number</label>
+              <input type="tel" id="contact_number" name="contact_number" class="form-control" value="{{ student.contact_number or '' }}">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="educational_qualification">Highest Qualification</label>
+              <input type="text" id="educational_qualification" name="educational_qualification" class="form-control" value="{{ student.educational_qualification or '' }}" placeholder="e.g. Matriculation, Intermediate">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="skills_and_interests">Skills & Vocational Interests</label>
+            <textarea id="skills_and_interests" name="skills_and_interests" class="form-control">{{ student.skills_and_interests or '' }}</textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="previous_training">Previous Training or Experience</label>
+            <textarea id="previous_training" name="previous_training" class="form-control" placeholder="Any prior workshops or certifications attended...">{{ student.previous_training or '' }}</textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="document">Upload Verification Document / Certificate (PDF/PNG/JPG)</label>
+            <input type="file" id="document" name="document" class="form-control">
+            {% if student.document_filename %}
+              <div class="form-help" style="color: var(--success);">
+                &check; File on record: {{ student.document_filename }}
+              </div>
+            {% endif %}
+          </div>
+
+        {% elif current_user.is_trainer() and trainer %}
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="full_name">Full Name</label>
+              <input type="text" id="full_name" name="full_name" class="form-control" value="{{ trainer.full_name }}" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="contact_number">Contact Number</label>
+              <input type="tel" id="contact_number" name="contact_number" class="form-control" value="{{ trainer.contact_number or '' }}">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="department_or_trade">Trade / Department</label>
+              <input type="text" id="department_or_trade" name="department_or_trade" class="form-control" value="{{ trainer.department_or_trade or '' }}">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="qualification">Trainer Qualification</label>
+              <input type="text" id="qualification" name="qualification" class="form-control" value="{{ trainer.qualification or '' }}">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="bio">Professional Biography</label>
+            <textarea id="bio" name="bio" class="form-control">{{ trainer.bio or '' }}</textarea>
+          </div>
+        {% else %}
+          <p style="color: var(--text-muted);">Administrator account settings are managed securely through system configuration.</p>
+        {% endif %}
+
+        {% if not current_user.is_admin() %}
+          <button type="submit" class="btn btn-primary">Save Profile Updates</button>
+        {% endif %}
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}{% if course %}Edit Course{% else %}Create Course{% endif %} - KISS VTMS Admin{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>{% if course %}Edit Course: {{ course.title }}{% else %}Create New Vocational Course{% endif %}</h2>
+    <p>Configure curriculum scope, scheduling, trainer assignment, and certification thresholds</p>
+  </div>
+  <div>
+    <a href="{{ url_for('admin.courses') }}" class="btn btn-secondary">&larr; Back to Courses</a>
+  </div>
+</div>
+
+<div class="card" style="max-width: 900px; margin: 0 auto;">
+  <div class="card-header">
+    <h3>Course Information & Governance Parameters</h3>
+  </div>
+  <div class="card-body">
+    <form method="POST">
+      <!-- Row 1: Code, Title, Category -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="course_code">Course Code *</label>
+          <input type="text" id="course_code" name="course_code" class="form-control"
+                 value="{{ course.course_code if course else '' }}" placeholder="e.g. VT-IT-101"
+                 {% if course %}readonly style="background-color: var(--bg-subtle);"{% else %}required{% endif %}>
+          <span class="form-help">Unique identifier for the course batch</span>
+        </div>
+        <div class="form-group" style="grid-column: span 2;">
+          <label class="form-label" for="title">Course Title *</label>
+          <input type="text" id="title" name="title" class="form-control"
+                 value="{{ course.title if course else '' }}" placeholder="e.g. Computer Hardware & Networking Fundamentals" required>
+        </div>
+      </div>
+
+      <!-- Row 2: Category & Trainer -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="category_id">Training Category / Domain *</label>
+          <select id="category_id" name="category_id" class="form-control" required>
+            <option value="">Select Category</option>
+            {% for cat in categories %}
+              <option value="{{ cat.id }}" {% if course and course.category_id == cat.id %}selected{% endif %}>
+                {{ cat.name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="trainer_id">Assigned Trainer / Faculty</label>
+          <select id="trainer_id" name="trainer_id" class="form-control">
+            <option value="">-- Unassigned (Assign Later) --</option>
+            {% for trn in trainers %}
+              <option value="{{ trn.id }}" {% if course and course.trainer_id == trn.id %}selected{% endif %}>
+                {{ trn.full_name }} ({{ trn.trainer_id_code }} &bull; {{ trn.department_or_trade }})
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <!-- Course Description & Skills -->
+      <div class="form-group">
+        <label class="form-label" for="description">Course Description *</label>
+        <textarea id="description" name="description" class="form-control" rows="3" required placeholder="Detailed overview of syllabus, industry relevance, and learning outcomes...">{{ course.description if course else '' }}</textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="skills_covered">Specific Practical Skills Covered</label>
+        <input type="text" id="skills_covered" name="skills_covered" class="form-control"
+               value="{{ course.skills_covered if course else '' }}" placeholder="e.g. PC Assembly, Crimping Cables, Router Configuration, Troubleshooting">
+      </div>
+
+      <!-- Dates & Duration -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="duration_weeks">Duration (Weeks) *</label>
+          <input type="number" id="duration_weeks" name="duration_weeks" class="form-control"
+                 value="{{ course.duration_weeks if course else 8 }}" min="1" max="52" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="start_date">Batch Start Date *</label>
+          <input type="date" id="start_date" name="start_date" class="form-control"
+                 value="{{ course.start_date.strftime('%Y-%m-%d') if course else '' }}" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="end_date">Batch End Date *</label>
+          <input type="date" id="end_date" name="end_date" class="form-control"
+                 value="{{ course.end_date.strftime('%Y-%m-%d') if course else '' }}" required>
+        </div>
+      </div>
+
+      <!-- Schedule, Seats, Status -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="training_schedule">Weekly Schedule *</label>
+          <input type="text" id="training_schedule" name="training_schedule" class="form-control"
+                 value="{{ course.training_schedule if course else '' }}" placeholder="e.g. Mon, Wed, Fri 10:00 AM - 12:00 PM" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="max_seats">Maximum Student Capacity (Seats) *</label>
+          <input type="number" id="max_seats" name="max_seats" class="form-control"
+                 value="{{ course.max_seats if course else 30 }}" min="1" max="500" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="status">Course Batch Status *</label>
+          <select id="status" name="status" class="form-control">
+            <option value="active" {% if course and course.status == 'active' %}selected{% endif %}>Active (Accepting Enrollments)</option>
+            <option value="inactive" {% if course and course.status == 'inactive' %}selected{% endif %}>Inactive / Paused</option>
+            <option value="completed" {% if course and course.status == 'completed' %}selected{% endif %}>Completed Batch</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Eligibility & Criteria -->
+      <div class="form-group">
+        <label class="form-label" for="eligibility_criteria">Eligibility Criteria</label>
+        <input type="text" id="eligibility_criteria" name="eligibility_criteria" class="form-control"
+               value="{{ course.eligibility_criteria if course else 'Open to all KISS students (+2 and above)' }}">
+      </div>
+
+      <!-- Completion Criteria Configuration -->
+      <div style="background-color: var(--bg-subtle); padding: 1.25rem; border-radius: var(--radius-sm); margin-bottom: 1.25rem;">
+        <strong style="color: var(--primary); display: block; margin-bottom: 0.75rem;">Configurable Certification Rules:</strong>
+        <div class="form-row">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label" for="attendance_requirement">Minimum Attendance Percentage Required (%)</label>
+            <input type="number" id="attendance_requirement" name="attendance_requirement" class="form-control"
+                   value="{{ course.attendance_requirement if course else 75.0 }}" min="0" max="100" step="0.5" required>
+            <span class="form-help">Standard default: 75% verified presence</span>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label" for="passing_score">Minimum Passing Score Across Assessments (%)</label>
+            <input type="number" id="passing_score" name="passing_score" class="form-control"
+                   value="{{ course.passing_score if course else 50.0 }}" min="0" max="100" step="0.5" required>
+            <span class="form-help">Standard default: 50% passing threshold</span>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 1rem; margin-bottom: 0;">
+          <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; cursor: pointer;">
+            <input type="checkbox" name="certificate_available" value="1"
+                   {% if not course or course.certificate_available %}checked{% endif %}>
+            Enable Digital PDF Certificate upon fulfilling completion requirements
+          </label>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+        <a href="{{ url_for('admin.courses') }}" class="btn btn-secondary">Cancel</a>
+        <button type="submit" class="btn btn-primary">
+          {% if course %}Save Changes{% else %}Create Course{% endif %}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

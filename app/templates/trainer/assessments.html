@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Assessments: {{ course.title }} - KISS VTMS Trainer Portal{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div style="font-size: 0.85rem; text-transform: uppercase; color: var(--accent); font-weight: 700;">
+      Skill Evaluations &bull; {{ course.course_code }}
+    </div>
+    <h2>{{ course.title }}</h2>
+    <p>Define practical skill assessments, assign maximum marks, and evaluate student submissions</p>
+  </div>
+  <div>
+    <a href="{{ url_for('trainer.course_detail', course_id=course.id) }}" class="btn btn-secondary">&larr; Back to Course</a>
+  </div>
+</div>
+
+<div class="card-grid" style="grid-template-columns: 1fr 2fr;">
+  <!-- Create Assessment Form -->
+  <div class="card">
+    <div class="card-header">
+      <h3>+ Create Assessment</h3>
+    </div>
+    <div class="card-body">
+      <form method="POST" action="{{ url_for('trainer.assessments', course_id=course.id) }}">
+        <div class="form-group">
+          <label class="form-label" for="title">Assessment Title *</label>
+          <input type="text" id="title" name="title" class="form-control" placeholder="e.g. Practical Lab Test 1" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="assessment_type">Assessment Type *</label>
+          <select id="assessment_type" name="assessment_type" class="form-control">
+            <option value="practical">Practical Workshop Test</option>
+            <option value="project">Hands-on Capstone Project</option>
+            <option value="quiz">Skill Knowledge Quiz</option>
+            <option value="theory">Theoretical Exam</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="max_marks">Maximum Marks *</label>
+          <input type="number" id="max_marks" name="max_marks" class="form-control" value="100" min="1" max="1000" step="1" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="due_date">Submission / Evaluation Date</label>
+          <input type="date" id="due_date" name="due_date" class="form-control">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="description">Instructions / Assessment Criteria</label>
+          <textarea id="description" name="description" class="form-control" placeholder="Explain the rubric, required tasks, and expectations..."></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-accent" style="width: 100%;">Create Assessment</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Assessments Table -->
+  <div class="card">
+    <div class="card-header">
+      <h3>Configured Assessments ({{ assessments|length }})</h3>
+    </div>
+    <div class="card-body">
+      {% if assessments %}
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Title & Description</th>
+                <th>Type</th>
+                <th>Max Marks</th>
+                <th>Due Date</th>
+                <th>Evaluated</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for a in assessments %}
+                <tr>
+                  <td>
+                    <strong>{{ a.title }}</strong>
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">{{ a.description[:80] if a.description else 'Practical evaluation' }}</div>
+                  </td>
+                  <td><span class="badge badge-gray">{{ a.assessment_type }}</span></td>
+                  <td><strong>{{ a.max_marks }}</strong> pts</td>
+                  <td>{{ a.due_date|format_date if a.due_date else 'Continuous' }}</td>
+                  <td>
+                    <span class="badge badge-info">{{ a.results.count() }} Students Graded</span>
+                  </td>
+                  <td>
+                    <a href="{{ url_for('trainer.grade_assessment', assessment_id=a.id) }}" class="btn btn-sm btn-primary">
+                      Grade & Enter Marks
+                    </a>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <p style="color: var(--text-muted); padding: 1.5rem 0; text-align: center;">
+          No assessments have been configured for this course yet. Use the form on the left to add one.
+        </p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

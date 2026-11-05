@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}Student Dashboard - KISS Vocational Training Management System{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Trainee Learning Portal</h2>
+    <p>Welcome back, <strong>{{ student.full_name }}</strong> (ID: <code>{{ student.student_id_code }}</code> &bull; {{ student.academic_level or 'Trainee' }})</p>
+  </div>
+  <div>
+    <a href="{{ url_for('student.courses') }}" class="btn btn-accent">+ Browse & Enroll in Courses</a>
+  </div>
+</div>
+
+<!-- Metric Stat Cards -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <span class="stat-label">Total Enrollments</span>
+    <span class="stat-value">{{ total_enrolled }}</span>
+    <span class="stat-sub">Lifetime vocational programs</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Active Training</span>
+    <span class="stat-value">{{ active_count }}</span>
+    <span class="stat-sub">Currently attending classes</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Completed Courses</span>
+    <span class="stat-value">{{ completed_count }}</span>
+    <span class="stat-sub">Requirements fulfilled</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Certificates Earned</span>
+    <span class="stat-value">{{ certificates_count }}</span>
+    <span class="stat-sub">Authenticated credentials</span>
+  </div>
+</div>
+
+<!-- Enrolled Courses & Progress -->
+<div class="card">
+  <div class="card-header">
+    <h3>My Active Courses & Completion Progress</h3>
+    <a href="{{ url_for('student.my_enrollments') }}" class="btn btn-sm btn-outline">View All Enrollments</a>
+  </div>
+  <div class="card-body">
+    {% if course_summaries %}
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Course</th>
+              <th>Category</th>
+              <th>Attendance Progress</th>
+              <th>Assessment Score</th>
+              <th>Status</th>
+              <th>Certificate Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in course_summaries %}
+              <tr>
+                <td>
+                  <strong><a href="{{ url_for('student.course_detail', course_id=item.course.id) }}">{{ item.course.title }}</a></strong>
+                  <div style="font-size: 0.8rem; color: var(--text-muted);">{{ item.course.course_code }} &bull; {{ item.course.duration_weeks }} Wks</div>
+                </td>
+                <td>{{ item.course.category.name }}</td>
+                <td>
+                  <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
+                    <span>{{ item.attendance.percentage }}%</span>
+                    <span style="color: var(--text-muted);">(Req: {{ item.course.attendance_requirement }}%)</span>
+                  </div>
+                  <div class="progress-bar-container">
+                    <div class="progress-bar-fill {% if item.attendance.percentage >= item.course.attendance_requirement %}progress-bar-success{% else %}progress-bar-warning{% endif %}"
+                         style="width: {{ [item.attendance.percentage, 100]|min }}%;"></div>
+                  </div>
+                  <div style="font-size: 0.75rem; color: var(--text-light); margin-top: 0.2rem;">
+                    {{ item.attendance.present }} of {{ item.attendance.total }} sessions attended
+                  </div>
+                </td>
+                <td>
+                  <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
+                    <span>{{ item.assessment.average_percentage }}%</span>
+                    <span style="color: var(--text-muted);">(Pass: {{ item.course.passing_score }}%)</span>
+                  </div>
+                  <div class="progress-bar-container">
+                    <div class="progress-bar-fill {% if item.assessment.average_percentage >= item.course.passing_score %}progress-bar-success{% else %}progress-bar-danger{% endif %}"
+                         style="width: {{ [item.assessment.average_percentage, 100]|min }}%;"></div>
+                  </div>
+                  <div style="font-size: 0.75rem; color: var(--text-light); margin-top: 0.2rem;">
+                    {{ item.assessment.completed }} of {{ item.assessment.count }} assessments evaluated
+                  </div>
+                </td>
+                <td>
+                  {% if item.enrollment.status == 'completed' %}
+                    <span class="badge badge-success">Completed</span>
+                  {% elif item.enrollment.status == 'enrolled' %}
+                    <span class="badge badge-info">In Progress</span>
+                  {% else %}
+                    <span class="badge badge-gray">{{ item.enrollment.status }}</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if item.certificate %}
+                    <a href="{{ url_for('student.download_certificate', course_id=item.course.id) }}" class="btn btn-sm btn-success">
+                      &darr; Download PDF
+                    </a>
+                  {% elif item.eligible %}
+                    <a href="{{ url_for('student.download_certificate', course_id=item.course.id) }}" class="btn btn-sm btn-accent">
+                      Generate Certificate
+                    </a>
+                  {% else %}
+                    <span class="badge badge-warning" title="Requirements pending">Incomplete</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div style="text-align: center; padding: 2rem;">
+        <p style="color: var(--text-muted); margin-bottom: 1rem;">You are not enrolled in any vocational training programs yet.</p>
+        <a href="{{ url_for('student.courses') }}" class="btn btn-primary">Browse Available Courses</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Upcoming Sessions Timeline -->
+<div class="card">
+  <div class="card-header">
+    <h3>Upcoming Training Sessions & Practical Labs</h3>
+    <a href="{{ url_for('student.schedule') }}" class="btn btn-sm btn-outline">Full Schedule</a>
+  </div>
+  <div class="card-body">
+    {% if upcoming_sessions %}
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Timing</th>
+              <th>Course</th>
+              <th>Topic / Practical Activity</th>
+              <th>Venue / Lab</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in upcoming_sessions %}
+              <tr>
+                <td><strong>{{ s.session_date|format_date }}</strong></td>
+                <td>{{ s.start_time }} - {{ s.end_time }}</td>
+                <td>{{ s.course.title }} ({{ s.course.course_code }})</td>
+                <td>{{ s.topic }}</td>
+                <td><span class="badge badge-gray">{{ s.room_or_lab or 'Main Workshop' }}</span></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p style="color: var(--text-muted); padding: 1rem 0;">No upcoming training sessions scheduled for your enrolled courses.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

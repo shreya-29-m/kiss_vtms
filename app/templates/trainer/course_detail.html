@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}Manage {{ course.title }} - KISS VTMS Trainer Portal{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div style="font-size: 0.85rem; text-transform: uppercase; color: var(--accent); font-weight: 700;">
+      {{ course.category.name }} &bull; {{ course.course_code }}
+    </div>
+    <h2>{{ course.title }}</h2>
+    <p>Capacity: {{ course.enrolled_count }} / {{ course.max_seats }} Enrolled &bull; Attendance Req: {{ course.attendance_requirement }}% &bull; Pass Mark: {{ course.passing_score }}%</p>
+  </div>
+  <div style="display: flex; gap: 0.5rem;">
+    <a href="{{ url_for('trainer.attendance', course_id=course.id) }}" class="btn btn-primary">Mark Attendance</a>
+    <a href="{{ url_for('trainer.assessments', course_id=course.id) }}" class="btn btn-accent">Assessments</a>
+    <a href="{{ url_for('trainer.materials', course_id=course.id) }}" class="btn btn-outline">Upload Materials</a>
+    <a href="{{ url_for('trainer.course_report', course_id=course.id) }}" class="btn btn-secondary">Report</a>
+  </div>
+</div>
+
+<!-- Enrolled Student Cohort -->
+<div class="card">
+  <div class="card-header">
+    <h3>Enrolled Student Cohort ({{ student_metrics|length }} Trainees)</h3>
+  </div>
+  <div class="card-body">
+    {% if student_metrics %}
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Student ID</th>
+              <th>Full Name</th>
+              <th>Academic Level</th>
+              <th>Attendance Record</th>
+              <th>Assessment Average</th>
+              <th>Eligibility Status</th>
+              <th>Contact</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for sm in student_metrics %}
+              <tr>
+                <td><code>{{ sm.student.student_id_code }}</code></td>
+                <td><strong>{{ sm.student.full_name }}</strong></td>
+                <td>{{ sm.student.academic_level or 'Trainee' }}</td>
+                <td>
+                  <strong>{{ sm.attendance.percentage }}%</strong>
+                  <div class="progress-bar-container" style="width: 100px;">
+                    <div class="progress-bar-fill {% if sm.attendance.percentage >= course.attendance_requirement %}progress-bar-success{% else %}progress-bar-warning{% endif %}"
+                         style="width: {{ [sm.attendance.percentage, 100]|min }}%;"></div>
+                  </div>
+                  <span style="font-size: 0.75rem; color: var(--text-light);">{{ sm.attendance.present }}/{{ sm.attendance.total }} sessions</span>
+                </td>
+                <td>
+                  <strong>{{ sm.assessment.average_percentage }}%</strong>
+                  <div class="progress-bar-container" style="width: 100px;">
+                    <div class="progress-bar-fill {% if sm.assessment.average_percentage >= course.passing_score %}progress-bar-success{% else %}progress-bar-danger{% endif %}"
+                         style="width: {{ [sm.assessment.average_percentage, 100]|min }}%;"></div>
+                  </div>
+                  <span style="font-size: 0.75rem; color: var(--text-light);">{{ sm.assessment.completed }}/{{ sm.assessment.count }} graded</span>
+                </td>
+                <td>
+                  {% if sm.eligible %}
+                    <span class="badge badge-success">&check; Eligible</span>
+                  {% else %}
+                    <span class="badge badge-warning" title="{{ sm.reason }}">Pending</span>
+                  {% endif %}
+                </td>
+                <td>{{ sm.student.contact_number or '—' }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p style="color: var(--text-muted); padding: 1.5rem; text-align: center;">No students have enrolled in this batch yet.</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Training Schedule & Session Creator -->
+<div class="card-grid" style="grid-template-columns: 2fr 1fr;">
+  <!-- Schedule Table -->
+  <div class="card">
+    <div class="card-header">
+      <h3>Scheduled Sessions & Workshops</h3>
+    </div>
+    <div class="card-body">
+      {% if schedules %}
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Topic / Task</th>
+                <th>Lab / Venue</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for s in schedules %}
+                <tr>
+                  <td><strong>{{ s.session_date|format_date }}</strong></td>
+                  <td>{{ s.start_time }} - {{ s.end_time }}</td>
+                  <td>{{ s.topic }}</td>
+                  <td><span class="badge badge-gray">{{ s.room_or_lab or 'Workshop' }}</span></td>
+                  <td>
+                    <a href="{{ url_for('trainer.attendance', course_id=course.id, date=s.session_date.strftime('%Y-%m-%d')) }}" class="btn btn-sm btn-outline">
+                      Mark
+                    </a>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <p style="color: var(--text-muted);">No training sessions scheduled yet.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Add Session Form -->
+  <div class="card">
+    <div class="card-header">
+      <h3>+ Add Session to Schedule</h3>
+    </div>
+    <div class="card-body">
+      <form method="POST" action="{{ url_for('trainer.add_schedule', course_id=course.id) }}">
+        <div class="form-group">
+          <label class="form-label" for="session_date">Session Date *</label>
+          <input type="date" id="session_date" name="session_date" class="form-control" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="start_time">Start Time *</label>
+            <input type="text" id="start_time" name="start_time" class="form-control" placeholder="10:00 AM" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="end_time">End Time</label>
+            <input type="text" id="end_time" name="end_time" class="form-control" placeholder="12:00 PM">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="topic">Topic / Practical Activity *</label>
+          <input type="text" id="topic" name="topic" class="form-control" placeholder="e.g. Safety Gear & Tool Handling" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="room_or_lab">Room / Laboratory</label>
+          <input type="text" id="room_or_lab" name="room_or_lab" class="form-control" placeholder="e.g. IT Lab 2 / Trade Shed">
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Add to Schedule</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

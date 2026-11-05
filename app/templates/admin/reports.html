@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}System Reports & Analytics - KISS VTMS Admin{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Vocational Training Reports & Analytics</h2>
+    <p>Macro-level metrics across vocational categories, enrollment densities, and certification rates</p>
+  </div>
+  <div>
+    <a href="{{ url_for('admin.export_csv') }}" class="btn btn-primary">&darr; Export Full Enrollments CSV</a>
+  </div>
+</div>
+
+<!-- Macro Stat Cards -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <span class="stat-label">Total Trainee Enrollments</span>
+    <span class="stat-value">{{ total_enrollments }}</span>
+    <span class="stat-sub">Across all vocational domains</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Total Issued Certificates</span>
+    <span class="stat-value">{{ total_certs }}</span>
+    <span class="stat-sub">Graduated trainees</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Overall Completion Rate</span>
+    <span class="stat-value" style="color: var(--success);">{{ overall_completion_rate }}%</span>
+    <span class="stat-sub">Certificates vs Enrollments</span>
+  </div>
+</div>
+
+<!-- Category Performance Table -->
+<div class="card">
+  <div class="card-header">
+    <h3>Vocational Category Performance Breakdown</h3>
+  </div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Trade / Domain Category</th>
+            <th>Active Courses</th>
+            <th>Enrolled Students</th>
+            <th>Certificates Issued</th>
+            <th>Domain Share</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for cs in category_stats %}
+            <tr>
+              <td><strong>{{ cs.category.name }}</strong></td>
+              <td><span class="badge badge-info">{{ cs.course_count }} Courses</span></td>
+              <td><strong>{{ cs.enrollment_count }}</strong> Trainees</td>
+              <td><strong>{{ cs.certificate_count }}</strong> Graduated</td>
+              <td>
+                {% if total_enrollments > 0 %}
+                  {% set share = (cs.enrollment_count / total_enrollments * 100)|round(1) %}
+                  <span>{{ share }}%</span>
+                  <div class="progress-bar-container" style="width: 100px;">
+                    <div class="progress-bar-fill progress-bar-success" style="width: {{ share }}%;"></div>
+                  </div>
+                {% else %}
+                  0%
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Course Performance Summary Table -->
+<div class="card">
+  <div class="card-header">
+    <h3>All Courses Performance Breakdown</h3>
+  </div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Course Title</th>
+            <th>Category</th>
+            <th>Trainer</th>
+            <th>Occupancy Rate</th>
+            <th>Certificates</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in courses %}
+            {% set occ = (c.enrolled_count / c.max_seats * 100)|round(1) if c.max_seats > 0 else 0 %}
+            <tr>
+              <td><code>{{ c.course_code }}</code></td>
+              <td><strong>{{ c.title }}</strong></td>
+              <td>{{ c.category.name }}</td>
+              <td>{{ c.trainer.full_name if c.trainer else 'Unassigned' }}</td>
+              <td>
+                <span>{{ c.enrolled_count }} / {{ c.max_seats }} ({{ occ }}%)</span>
+                <div class="progress-bar-container" style="width: 90px;">
+                  <div class="progress-bar-fill {% if occ >= 80 %}progress-bar-warning{% else %}progress-bar-success{% endif %}"
+                       style="width: {{ [occ, 100]|min }}%;"></div>
+                </div>
+              </td>
+              <td><strong>{{ c.certificates.count() }}</strong> Issued</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Courses - KISS VTMS Admin{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Vocational Training Courses</h2>
+    <p>Configure course offerings, seat capacities, instructor assignments, and completion criteria</p>
+  </div>
+  <div>
+    <a href="{{ url_for('admin.create_course') }}" class="btn btn-primary">+ Create New Course</a>
+  </div>
+</div>
+
+<div class="filter-bar">
+  <input type="text" data-table-filter="#coursesTable" class="form-control search-input" placeholder="Quick filter courses by title, category, code, or trainer...">
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h3>All Vocational Courses ({{ courses|length }})</h3>
+  </div>
+  <div class="card-body">
+    {% if courses %}
+      <div class="table-responsive">
+        <table class="table" id="coursesTable">
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>Course Title</th>
+              <th>Category</th>
+              <th>Trainer Assigned</th>
+              <th>Seats Filled / Max</th>
+              <th>Attendance Req</th>
+              <th>Pass Mark</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in courses %}
+              <tr>
+                <td><code>{{ c.course_code }}</code></td>
+                <td>
+                  <strong>{{ c.title }}</strong>
+                  <div style="font-size: 0.8rem; color: var(--text-muted);">{{ c.duration_weeks }} Wks &bull; {{ c.training_schedule }}</div>
+                </td>
+                <td>{{ c.category.name }}</td>
+                <td>{{ c.trainer.full_name if c.trainer else 'Unassigned' }}</td>
+                <td>
+                  <strong>{{ c.enrolled_count }}</strong> / {{ c.max_seats }}
+                  <div class="progress-bar-container" style="width: 80px;">
+                    <div class="progress-bar-fill {% if c.is_full %}progress-bar-danger{% else %}progress-bar-success{% endif %}"
+                         style="width: {{ [(c.enrolled_count / c.max_seats * 100)|round, 100]|min }}%;"></div>
+                  </div>
+                </td>
+                <td>{{ c.attendance_requirement }}%</td>
+                <td>{{ c.passing_score }}%</td>
+                <td>
+                  {% if c.status == 'active' %}
+                    <span class="badge badge-success">Active</span>
+                  {% elif c.status == 'completed' %}
+                    <span class="badge badge-info">Completed</span>
+                  {% else %}
+                    <span class="badge badge-gray">Inactive</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div style="display: flex; gap: 0.35rem;">
+                    <a href="{{ url_for('admin.edit_course', course_id=c.id) }}" class="btn btn-sm btn-outline">Edit</a>
+                    <form method="POST" action="{{ url_for('admin.delete_course', course_id=c.id) }}"
+                          data-confirm="Are you sure you want to delete {{ c.title }}? All enrollments and records will be deleted." style="display: inline;">
+                      <button type="submit" class="btn btn-sm btn-danger">&times;</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p style="color: var(--text-muted); padding: 1.5rem 0; text-align: center;">No courses available.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Record Attendance: {{ course.title }} - KISS VTMS Trainer Portal{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div style="font-size: 0.85rem; text-transform: uppercase; color: var(--accent); font-weight: 700;">
+      Attendance Management &bull; {{ course.course_code }}
+    </div>
+    <h2>{{ course.title }}</h2>
+    <p>Mark daily session attendance for trainees. Minimum required attendance for certificate: {{ course.attendance_requirement }}%</p>
+  </div>
+  <div>
+    <a href="{{ url_for('trainer.course_detail', course_id=course.id) }}" class="btn btn-secondary">&larr; Back to Course</a>
+  </div>
+</div>
+
+<!-- Date Selector Bar -->
+<div class="filter-bar">
+  <form method="GET" action="{{ url_for('trainer.attendance', course_id=course.id) }}" style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+    <label style="font-weight: 600; font-size: 0.9rem;">Select Session Date:</label>
+    <input type="date" name="date" value="{{ selected_date.strftime('%Y-%m-%d') }}" class="form-control" style="width: auto;">
+    <button type="submit" class="btn btn-primary btn-sm">Load Date</button>
+  </form>
+
+  {% if distinct_dates %}
+    <div style="display: flex; gap: 0.4rem; align-items: center; margin-left: auto; flex-wrap: wrap;">
+      <span style="font-size: 0.8rem; color: var(--text-muted);">Recorded Dates:</span>
+      {% for d in distinct_dates[:4] %}
+        <a href="{{ url_for('trainer.attendance', course_id=course.id, date=d.strftime('%Y-%m-%d')) }}"
+           class="badge {% if d == selected_date %}badge-info{% else %}badge-gray{% endif %}">
+          {{ d.strftime('%d %b') }}
+        </a>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
+
+<!-- Attendance Entry Form -->
+<div class="card">
+  <div class="card-header">
+    <h3>Attendance Sheet for {{ selected_date.strftime('%A, %d %B %Y') }}</h3>
+  </div>
+  <div class="card-body">
+    {% if enrollments %}
+      <form method="POST" action="{{ url_for('trainer.attendance', course_id=course.id) }}">
+        <input type="hidden" name="attendance_date" value="{{ selected_date.strftime('%Y-%m-%d') }}">
+
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Student ID</th>
+                <th>Full Name</th>
+                <th>Academic Level</th>
+                <th>Cumulative Attendance</th>
+                <th>Status for Today</th>
+                <th>Remarks / Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for enr in enrollments %}
+                {% set existing = existing_records.get(enr.student.id) %}
+                {% set current_status = existing.status if existing else 'present' %}
+                {% set stats = enr.student.get_attendance_stats(course.id) %}
+                <tr>
+                  <td><code>{{ enr.student.student_id_code }}</code></td>
+                  <td><strong>{{ enr.student.full_name }}</strong></td>
+                  <td>{{ enr.student.academic_level or 'Trainee' }}</td>
+                  <td>
+                    <span>{{ stats.percentage }}%</span>
+                    <span style="font-size: 0.75rem; color: var(--text-light);">({{ stats.present }}/{{ stats.total }})</span>
+                  </td>
+                  <td>
+                    <select name="status_{{ enr.student.id }}" class="form-control" style="width: 130px; font-weight: 600;">
+                      <option value="present" {% if current_status == 'present' %}selected{% endif %}>&check; Present</option>
+                      <option value="late" {% if current_status == 'late' %}selected{% endif %}>Late</option>
+                      <option value="excused" {% if current_status == 'excused' %}selected{% endif %}>Excused</option>
+                      <option value="absent" {% if current_status == 'absent' %}selected{% endif %}>&cross; Absent</option>
+                    </select>
+                  </td>
+                  <td>
+                    <input type="text" name="remarks_{{ enr.student.id }}" value="{{ existing.remarks if existing and existing.remarks else '' }}" class="form-control" placeholder="Optional remark (e.g. medical leave)">
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end;">
+          <button type="submit" class="btn btn-success">
+            Save Attendance Records for {{ selected_date.strftime('%d %b %Y') }}
+          </button>
+        </div>
+      </form>
+    {% else %}
+      <p style="color: var(--text-muted); padding: 1.5rem; text-align: center;">
+        No active students are currently enrolled in this course batch.
+      </p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

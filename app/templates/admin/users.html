@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Users - KISS VTMS Admin{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>User & Access Control Management</h2>
+    <p>Manage accounts, role assignments (Student, Trainer, Administrator), and account activation</p>
+  </div>
+  <div>
+    <a href="{{ url_for('admin.create_user') }}" class="btn btn-primary">+ Register New User</a>
+  </div>
+</div>
+
+<!-- Role Filters & Quick Search -->
+<div class="filter-bar">
+  <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+    <span style="font-size: 0.85rem; font-weight: 600;">Filter by Role:</span>
+    <a href="{{ url_for('admin.users') }}" class="btn btn-sm {% if not current_filter %}btn-primary{% else %}btn-outline{% endif %}">All Users</a>
+    <a href="{{ url_for('admin.users', role='student') }}" class="btn btn-sm {% if current_filter == 'student' %}btn-primary{% else %}btn-outline{% endif %}">Students</a>
+    <a href="{{ url_for('admin.users', role='trainer') }}" class="btn btn-sm {% if current_filter == 'trainer' %}btn-primary{% else %}btn-outline{% endif %}">Trainers</a>
+    <a href="{{ url_for('admin.users', role='admin') }}" class="btn btn-sm {% if current_filter == 'admin' %}btn-primary{% else %}btn-outline{% endif %}">Administrators</a>
+  </div>
+  <input type="text" data-table-filter="#usersTable" class="form-control search-input" placeholder="Quick filter user records..." style="margin-left: auto;">
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h3>Registered Users ({{ users|length }})</h3>
+  </div>
+  <div class="card-body">
+    {% if users %}
+      <div class="table-responsive">
+        <table class="table" id="usersTable">
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Full Name & Identifier</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Created Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for u in users %}
+              <tr>
+                <td><strong>{{ u.username }}</strong></td>
+                <td>
+                  {% if u.is_student() and u.student_profile %}
+                    {{ u.student_profile.full_name }}
+                    <div style="font-size: 0.75rem; color: var(--text-muted);"><code>{{ u.student_profile.student_id_code }}</code> &bull; {{ u.student_profile.academic_level }}</div>
+                  {% elif u.is_trainer() and u.trainer_profile %}
+                    {{ u.trainer_profile.full_name }}
+                    <div style="font-size: 0.75rem; color: var(--text-muted);"><code>{{ u.trainer_profile.trainer_id_code }}</code> &bull; {{ u.trainer_profile.department_or_trade }}</div>
+                  {% else %}
+                    <span style="color: var(--text-muted);">System Administrator</span>
+                  {% endif %}
+                </td>
+                <td>{{ u.email }}</td>
+                <td><span class="role-pill role-{{ u.role }}">{{ u.role }}</span></td>
+                <td>
+                  {% if u.is_active %}
+                    <span class="badge badge-success">Active</span>
+                  {% else %}
+                    <span class="badge badge-danger">Deactivated</span>
+                  {% endif %}
+                </td>
+                <td><span style="font-size: 0.8rem;">{{ u.created_at|format_date }}</span></td>
+                <td>
+                  {% if u.id != current_user.id %}
+                    <form method="POST" action="{{ url_for('admin.toggle_user_status', user_id=u.id) }}"
+                          data-confirm="Toggle status for user {{ u.username }}?" style="display: inline;">
+                      <button type="submit" class="btn btn-sm {% if u.is_active %}btn-outline{% else %}btn-success{% endif %}">
+                        {% if u.is_active %}Deactivate{% else %}Activate{% endif %}
+                      </button>
+                    </form>
+                  {% else %}
+                    <span style="font-size: 0.75rem; color: var(--text-light);">Current User</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p style="color: var(--text-muted); padding: 1.5rem 0; text-align: center;">No users found.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
